@@ -32,12 +32,11 @@
       position: relative;
     }
 
-    #canvas img {
+    #display {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      pointer-events: none;
     }
   </style>
 </head>
@@ -54,28 +53,34 @@
     sessionStorage.removeItem('fromDoodle');
 
     function getXY(e) {
-      if (e.touches && e.touches.length > 0) {
-        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      }
       if (e.changedTouches && e.changedTouches.length > 0) {
         return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
       }
       return { x: e.clientX, y: e.clientY };
     }
 
-    // 只监听 canvas 层，手机触摸直接用 touchend，坐标通过 changedTouches 获取
+    // 所有触摸事件统一由 canvas 捕获，统一用 canvas 的 rect 计算坐标
     canvas.addEventListener('touchend', function(e) {
       e.preventDefault();
       const pt = getXY(e);
       const rect = canvas.getBoundingClientRect();
-      const clickX = pt.x - rect.left;
+      const x = pt.x - rect.left;
+      const y = pt.y - rect.top;
 
       if (isPlaying) {
+        // 在播放态：点击中间区域切回底图，点击按钮区域跳转
         const leftBound = rect.width * 0.2;
         const rightBound = rect.width * 0.8;
-        if (clickX >= leftBound && clickX <= rightBound) {
+        if (x >= leftBound && x <= rightBound) {
           display.src = '底图.png';
           isPlaying = false;
+        }
+        // 按钮在画布坐标 (348, 350)，允许 33px 半径
+        const dist = Math.hypot(x - 348, y - 350);
+        if (dist <= 33) {
+          display.src = '空白.png';
+          sessionStorage.setItem('fromDoodle', '1');
+          setTimeout(() => { window.location.href = '涂鸦编辑.html'; }, 300);
         }
       } else {
         display.src = '播放态.png';
@@ -83,49 +88,28 @@
       }
     }, { passive: false });
 
-    display.addEventListener('touchend', function(e) {
-      if (!isPlaying) return;
-      e.preventDefault();
-      const pt = getXY(e);
-      const rect = display.getBoundingClientRect();
-      const clickX = pt.x - rect.left;
-      const clickY = pt.y - rect.top;
-      const dist = Math.hypot(clickX - 348, clickY - 350);
-      if (dist <= 33) {
-        display.src = '空白.png';
-        sessionStorage.setItem('fromDoodle', '1');
-        setTimeout(() => { window.location.href = '涂鸦编辑.html'; }, 300);
-      }
-    }, { passive: false });
-
-    // 桌面端 click
+    // 桌面端点击
     canvas.addEventListener('click', function(e) {
       const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
       if (isPlaying) {
         const leftBound = rect.width * 0.2;
         const rightBound = rect.width * 0.8;
-        if (clickX >= leftBound && clickX <= rightBound) {
+        if (x >= leftBound && x <= rightBound) {
           display.src = '底图.png';
           isPlaying = false;
+        }
+        const dist = Math.hypot(x - 348, y - 350);
+        if (dist <= 33) {
+          display.src = '空白.png';
+          sessionStorage.setItem('fromDoodle', '1');
+          setTimeout(() => { window.location.href = '涂鸦编辑.html'; }, 300);
         }
       } else {
         display.src = '播放态.png';
         isPlaying = true;
-      }
-    });
-
-    display.addEventListener('click', function(e) {
-      if (!isPlaying) return;
-      const rect = display.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      const dist = Math.hypot(clickX - 348, clickY - 350);
-      if (dist <= 33) {
-        display.src = '空白.png';
-        sessionStorage.setItem('fromDoodle', '1');
-        setTimeout(() => { window.location.href = '涂鸦编辑.html'; }, 300);
       }
     });
   </script>
