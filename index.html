@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iOS 画布切换</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #d1d1d6;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #canvas {
+      width: 375px;
+      height: 812px;
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.3);
+      position: relative;
+      cursor: pointer;
+    }
+
+    #canvas img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas">
+    <img id="display" src="底图.png" alt="">
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const canvas = document.getElementById('canvas');
+
+    let isPlaying = false;
+
+    // Returning from doodle editor — reset to default
+    if (sessionStorage.getItem('fromDoodle') === '1') {
+      sessionStorage.removeItem('fromDoodle');
+      display.src = '底图.png';
+      isPlaying = false;
+    }
+
+    canvas.addEventListener('click', function (e) {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      if (isPlaying) {
+        const canvasWidth = rect.width;
+        const leftBound = canvasWidth * 0.2;
+        const rightBound = canvasWidth * 0.8;
+
+        if (clickX >= leftBound && clickX <= rightBound) {
+          display.src = '底图.png';
+          isPlaying = false;
+        }
+      } else {
+        display.src = '播放态.png';
+        isPlaying = true;
+      }
+    });
+
+    display.addEventListener('click', function (e) {
+      if (!isPlaying) return;
+      const rect = display.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const btnX = 348;
+      const btnY = 350;
+      const btnR = 28;
+
+      const dist = Math.hypot(clickX - btnX, clickY - btnY);
+      if (dist <= btnR + 5) {
+        display.src = '空白.png';
+        sessionStorage.setItem('fromDoodle', '1');
+        setTimeout(() => { window.location.href = '涂鸦编辑.html'; }, 300);
+      }
+    });
+  </script>
+</body>
+</html>
