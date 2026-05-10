@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>iOS 画布切换</title>
   <style>
     * {
@@ -17,8 +17,9 @@
       align-items: center;
       min-height: 100vh;
       background: #d1d1d6;
-      cursor: pointer;
       user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #canvas {
@@ -28,7 +29,7 @@
       overflow: hidden;
       box-shadow: 0 0 60px rgba(0, 0, 0, 0.3);
       position: relative;
-      cursor: pointer;
+      touch-action: manipulation;
     }
 
     #canvas img {
@@ -36,7 +37,6 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: opacity 0.2s ease;
     }
   </style>
 </head>
@@ -65,9 +65,11 @@
     }
 
     function handleCanvas(e) {
+      e.preventDefault();
       const pt = getPoint(e);
       const rect = canvas.getBoundingClientRect();
       const clickX = pt.x - rect.left;
+
       if (isPlaying) {
         const canvasWidth = rect.width;
         const leftBound = canvasWidth * 0.2;
@@ -84,6 +86,7 @@
 
     function handleDisplay(e) {
       if (!isPlaying) return;
+      e.preventDefault();
       const pt = getPoint(e);
       const rect = display.getBoundingClientRect();
       const clickX = pt.x - rect.left;
@@ -99,8 +102,9 @@
       }
     }
 
-    // 统一使用 pointer 事件，兼容桌面鼠标和手机触摸
+    // 统一使用 pointerdown，兼容桌面鼠标和手机触摸
     canvas.addEventListener('pointerdown', handleCanvas);
     display.addEventListener('pointerdown', handleDisplay);
-  </script></body>
+  </script>
+</body>
 </html>
