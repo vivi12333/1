@@ -20,6 +20,7 @@
       user-select: none;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
     }
 
     #canvas {
@@ -64,8 +65,7 @@
       return { x: e.clientX, y: e.clientY };
     }
 
-    function handleCanvas(e) {
-      e.preventDefault();
+    canvas.addEventListener('pointerup', function(e) {
       const pt = getPoint(e);
       const rect = canvas.getBoundingClientRect();
       const clickX = pt.x - rect.left;
@@ -82,11 +82,10 @@
         display.src = '播放态.png';
         isPlaying = true;
       }
-    }
+    });
 
-    function handleDisplay(e) {
+    display.addEventListener('pointerup', function(e) {
       if (!isPlaying) return;
-      e.preventDefault();
       const pt = getPoint(e);
       const rect = display.getBoundingClientRect();
       const clickX = pt.x - rect.left;
@@ -100,11 +99,7 @@
         sessionStorage.setItem('fromDoodle', '1');
         setTimeout(() => { window.location.href = '涂鸦编辑.html'; }, 300);
       }
-    }
-
-    // 统一使用 pointerdown，兼容桌面鼠标和手机触摸
-    canvas.addEventListener('pointerdown', handleCanvas);
-    display.addEventListener('pointerdown', handleDisplay);
+    });
   </script>
 </body>
 </html>
