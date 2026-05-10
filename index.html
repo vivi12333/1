@@ -52,11 +52,8 @@
 
     let isPlaying = false;
 
-    if (sessionStorage.getItem('fromDoodle') === '1') {
-      sessionStorage.removeItem('fromDoodle');
-      display.src = '底图.png';
-      isPlaying = false;
-    }
+    // 每次加载都从初始状态开始，不管之前是否去过涂鸦页
+    sessionStorage.removeItem('fromDoodle');
 
     function getPoint(e) {
       if (e.changedTouches && e.changedTouches.length > 0) {
