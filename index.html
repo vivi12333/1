@@ -51,64 +51,23 @@
 
     let isPlaying = false;
 
-    // Returning from doodle editor — reset to default
     if (sessionStorage.getItem('fromDoodle') === '1') {
       sessionStorage.removeItem('fromDoodle');
       display.src = '底图.png';
       isPlaying = false;
     }
 
-    canvas.addEventListener('click', function (e) {
+    function getPoint(e) {
+      if (e.changedTouches && e.changedTouches.length > 0) {
+        return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function handleCanvas(e) {
+      const pt = getPoint(e);
       const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-
-      if (isPlaying) {
-        const canvasWidth = rect.width;
-        const leftBound = canvasWidth * 0.2;
-        const rightBound = canvasWidth * 0.8;
-
-        if (clickX >= leftBound && clickX <= rightBound) {
-          display.src = '底图.png';
-          isPlaying = false;
-        }
-      } else {
-        display.src = '播放态.png';
-        isPlaying = true;
-      }
-    });
-
-    display.addEventListener('click', function (e) {
-      if (!isPlaying) return;
-      const rect = display.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-
-      const btnX = 348;
-      const btnY = 350;
-      const btnR = 28;
-
-      const dist = Math.hypot(clickX - btnX, clickY - btnY);
-      if (dist <= btnR + 5) {
-        display.src = '空白.png';
-        sessionStorage.setItem('fromDoodle', '1');
-        setTimeout(() => { window.location.href = '涂鸦编辑.html'; }, 300);
-      }
-    });
-  // 兼容手机触摸事件
-    function handlePointer(e) {
-      let clientX, clientY;
-      if (e.changedTouches) {
-        clientX = e.changedTouches[0].clientX;
-        clientY = e.changedTouches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
-      const rect = canvas.getBoundingClientRect();
-      const clickX = clientX - rect.left;
-      const clickY = clientY - rect.top;
-
+      const clickX = pt.x - rect.left;
       if (isPlaying) {
         const canvasWidth = rect.width;
         const leftBound = canvasWidth * 0.2;
@@ -123,19 +82,12 @@
       }
     }
 
-    function handleDisplayPointer(e) {
+    function handleDisplay(e) {
       if (!isPlaying) return;
-      let clientX, clientY;
-      if (e.changedTouches) {
-        clientX = e.changedTouches[0].clientX;
-        clientY = e.changedTouches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
+      const pt = getPoint(e);
       const rect = display.getBoundingClientRect();
-      const clickX = clientX - rect.left;
-      const clickY = clientY - rect.top;
+      const clickX = pt.x - rect.left;
+      const clickY = pt.y - rect.top;
       const btnX = 348;
       const btnY = 350;
       const btnR = 28;
@@ -147,18 +99,8 @@
       }
     }
 
-    // 桌面端 click
-    canvas.addEventListener('click', handlePointer);
-    display.addEventListener('click', handleDisplayPointer);
-
-    // 移动端 touchend（用 pointer 事件统一处理更好）
-    canvas.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      handlePointer(e);
-    });
-    display.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      handleDisplayPointer(e);
-    });
+    // 统一使用 pointer 事件，兼容桌面鼠标和手机触摸
+    canvas.addEventListener('pointerdown', handleCanvas);
+    display.addEventListener('pointerdown', handleDisplay);
   </script></body>
 </html>
